@@ -39,15 +39,6 @@ pub struct Args {
 }
 
 #[derive(Debug, Clone)]
-pub struct Stats {
-    pub total_bytes: u64,
-    pub total_messages: u64,
-    /// Actual measured send window; rates must be derived from this,
-    /// never from the configured duration (which is only a deadline).
-    pub elapsed: std::time::Duration,
-}
-
-#[derive(Debug, Clone)]
 pub struct ClientConfig {
     pub connect: IpAddr,
     pub port: u16,
@@ -63,14 +54,6 @@ pub struct ServerConfig {
     pub bind: IpAddr,
     pub port: u16,
     pub buffer: usize,
-}
-
-pub fn calculate_mb(val: u64) -> f64 {
-    (val as f64 * 8.0) / 1_000_000.0
-}
-
-pub fn calculate_gb(val: u64) -> f64 {
-    (val as f64 * 8.0) / 1_000_000_000.0
 }
 
 impl ClientConfig {

@@ -9,6 +9,7 @@ use tokio_util::sync::CancellationToken;
 mod async_net;
 mod config;
 mod error;
+mod stats;
 
 #[tokio::main]
 async fn main() -> Result<(), AppError> {

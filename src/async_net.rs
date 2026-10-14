@@ -1,6 +1,7 @@
 use crate::config::{ClientConfig, ServerConfig};
 use crate::error::AppError;
 use crate::stats::{Stats, build_table, si_scale};
+use crate::token::CancellationAtomic;
 use log::{debug, error, info};
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -8,11 +9,10 @@ use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWrite, AsyncWriteExt, BufWriter};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::task::{self, JoinSet};
-use tokio_util::sync::CancellationToken;
 
 pub async fn run_async_server(
     config: ServerConfig,
-    cancel: CancellationToken,
+    cancel: CancellationAtomic,
 ) -> Result<(), AppError> {
     let addr = format!("{}:{}", config.bind, config.port);
     let listener = TcpListener::bind(addr.as_str()).await?;
@@ -43,7 +43,7 @@ pub async fn handle_connection(
     mut socket: TcpStream,
     peer: SocketAddr,
     buffer: usize,
-    cancel: CancellationToken,
+    cancel: CancellationAtomic,
 ) {
     let mut buf = vec![0u8; buffer];
     let mut total_bytes: u64 = 0;
@@ -92,7 +92,7 @@ pub async fn handle_connection(
 
 pub async fn run_async_clients(
     config: ClientConfig,
-    cancel: CancellationToken,
+    cancel: CancellationAtomic,
 ) -> Result<(), AppError> {
     let barrier = Arc::new(tokio::sync::Barrier::new(config.threads));
     let (tx, mut rx) = tokio::sync::mpsc::channel(config.threads + 10);
@@ -199,7 +199,7 @@ pub async fn run_async_clients(
 pub async fn run_async_client(
     config: ClientConfig,
     barrier: Arc<tokio::sync::Barrier>,
-    cancel: CancellationToken,
+    cancel: CancellationAtomic,
     id: usize,
 ) -> Result<Stats, AppError> {
     let addr = format!("{}:{}", config.connect, config.port);

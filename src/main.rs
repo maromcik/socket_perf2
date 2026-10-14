@@ -1,15 +1,16 @@
 use crate::async_net::{run_async_clients, run_async_server};
 use crate::config::{Args, ClientConfig, ServerConfig};
 use crate::error::AppError;
+use crate::token::CancellationAtomic;
 use clap::Parser;
 use log::{error, info, warn};
 use std::time::Duration;
-use tokio_util::sync::CancellationToken;
 
 mod async_net;
 mod config;
 mod error;
 mod stats;
+mod token;
 
 #[tokio::main]
 async fn main() -> Result<(), AppError> {
@@ -19,7 +20,7 @@ async fn main() -> Result<(), AppError> {
         .filter(None, args.log_level)
         .init();
 
-    let cancel = CancellationToken::new();
+    let cancel = CancellationAtomic::new();
     match (ServerConfig::from(&args), ClientConfig::from(&args)) {
         (None, Some(config)) => {
             let fut = run_async_clients(config, cancel.clone());
@@ -38,7 +39,7 @@ async fn main() -> Result<(), AppError> {
 /// Runs the benchmark until it finishes on its own or ctrl-c is pressed.
 /// On ctrl-c the workers are cancelled and awaited so they can flush and
 /// report their final statistics before the process exits.
-async fn spawn_test<F>(fut: F, cancel: CancellationToken)
+async fn spawn_test<F>(fut: F, cancel: CancellationAtomic)
 where
     F: Future<Output = Result<(), AppError>> + Send + 'static,
 {

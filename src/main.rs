@@ -36,9 +36,6 @@ async fn main() -> Result<(), AppError> {
     Ok(())
 }
 
-/// Runs the benchmark until it finishes on its own or ctrl-c is pressed.
-/// On ctrl-c the workers are cancelled and awaited so they can flush and
-/// report their final statistics before the process exits.
 async fn spawn_test<F>(fut: F, cancel: CancellationAtomic)
 where
     F: Future<Output = Result<(), AppError>> + Send + 'static,

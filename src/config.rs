@@ -22,19 +22,22 @@ pub struct Args {
     )]
     pub log_level: log::LevelFilter,
 
-    #[arg(short = 'b', long = "bind")]
+    #[arg(short = 'b', long)]
     pub bind: Option<IpAddr>,
 
-    #[arg(short = 'c', long = "connect")]
+    #[arg(short = 'c', long)]
     pub connect: Option<IpAddr>,
 
-    #[arg(short = 'v', long = "changing_data", action = clap::ArgAction::SetTrue)]
-    pub variable_data: bool,
+    #[arg(short = 'v', long, action = clap::ArgAction::SetTrue)]
+    pub changing_data: bool,
 
-    #[arg(short = 't', long = "threads", default_value = "1")]
+    #[arg(short = 't', long, default_value = "1")]
     pub threads: usize,
 
-    #[arg(short = 'd', long = "duration", default_value = "10s", value_parser = humantime::parse_duration)]
+    #[arg(short = 'r', long, default_value = "8192")]
+    pub connection_backlog: i32,
+
+    #[arg(short = 'd', default_value = "10s", value_parser = humantime::parse_duration)]
     pub duration: Duration,
 }
 
@@ -54,6 +57,7 @@ pub struct ServerConfig {
     pub bind: IpAddr,
     pub port: u16,
     pub buffer: usize,
+    pub connection_backlog: i32,
 }
 
 impl ClientConfig {
@@ -65,7 +69,7 @@ impl ClientConfig {
             threads: args.threads,
             size: args.size,
             buffer: args.buffer.unwrap_or(0),
-            variable_data: args.variable_data,
+            variable_data: args.changing_data,
             duration: args.duration,
         };
         Some(config)
@@ -79,6 +83,7 @@ impl ServerConfig {
             bind,
             port: args.port,
             buffer: args.buffer.unwrap_or(67_108_864),
+            connection_backlog: args.connection_backlog,
         };
         Some(config)
     }

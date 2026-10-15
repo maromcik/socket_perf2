@@ -1,6 +1,6 @@
 [package]
 name = "socket_perf2"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 
 [dependencies]
@@ -11,4 +11,4 @@ humantime-serde = "1.1.1"
 log = "0.4.34"
 thiserror = "2.0.21"
 tokio = { version = "1.53.3", features = ["full"] }
-
+socket2 = "0.6.5"

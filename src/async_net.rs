@@ -3,6 +3,7 @@ use crate::error::AppError;
 use crate::stats::{Stats, build_table, si_scale};
 use crate::token::CancellationAtomic;
 use log::{debug, error, info};
+use socket2::{Domain, Protocol, Socket, Type};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
@@ -10,12 +11,27 @@ use tokio::io::{AsyncReadExt, AsyncWrite, AsyncWriteExt, BufWriter};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::task::{self, JoinSet};
 
+fn bind_listener(addr: SocketAddr, backlog: i32) -> Result<TcpListener, AppError> {
+    let domain = if addr.is_ipv6() {
+        Domain::IPV6
+    } else {
+        Domain::IPV4
+    };
+    let socket = Socket::new(domain, Type::STREAM, Some(Protocol::TCP))?;
+    socket.set_reuse_address(true)?;
+    socket.set_nonblocking(true)?;
+    socket.bind(&addr.into())?;
+    socket.listen(backlog)?;
+    let listener = TcpListener::from_std(socket.into())?;
+    Ok(listener)
+}
+
 pub async fn run_async_server(
     config: ServerConfig,
     cancel: CancellationAtomic,
 ) -> Result<(), AppError> {
     let addr = format!("{}:{}", config.bind, config.port);
-    let listener = TcpListener::bind(addr.as_str()).await?;
+    let listener = bind_listener(addr.parse()?, config.connection_backlog)?;
     info!("(async) Server listening on {addr}");
 
     let mut connections = JoinSet::new();

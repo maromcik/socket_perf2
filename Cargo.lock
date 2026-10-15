@@ -468,13 +468,14 @@ dependencies = [
 
 [[package]]
 name = "socket_perf2"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "clap",
  "env_logger",
  "humantime",
  "humantime-serde",
  "log",
+ "socket2",
  "thiserror",
  "tokio",
 ]

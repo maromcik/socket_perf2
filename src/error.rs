@@ -5,10 +5,18 @@ use thiserror::Error;
 pub enum AppError {
     #[error("I/O error {0}")]
     IoError(String),
+    #[error("Parse error {0}")]
+    ParseError(String),
 }
 
 impl From<std::io::Error> for AppError {
     fn from(e: std::io::Error) -> Self {
         AppError::IoError(e.to_string())
+    }
+}
+
+impl From<std::net::AddrParseError> for AppError {
+    fn from(e: std::net::AddrParseError) -> Self {
+        AppError::ParseError(e.to_string())
     }
 }
